@@ -1,0 +1,6 @@
+@photo_book_designer_server_main_HostAddress = http://localhost:5192
+
+GET {{photo_book_designer_server_main_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
