@@ -8,6 +8,8 @@ public interface IRoomService
     Task DeleteRoomAsync(Guid userId, Guid roomId);
     Task<RoomDTO> UpdateRoomNameAsync(Guid userId, Guid roomId, UpdateRoomNameDTO updateRoomName);
     Task<IEnumerable<RoomDTO>> GetRoomsAsync(Guid userId);
-    Task<RoomDTO> GetRoomByIdAsync(Guid userId, Guid roomId);
+    Task<CertainRoomDTO> GetRoomByIdAsync(Guid userId, Guid roomId);
+    Task<CertainRoomDTO> AddUserIntoRoom(AddUserDTO addUser, Guid userId);
+    Task<CertainRoomDTO> RemoveUserFromRoom(RemoveUserDTO removeUser, Guid adminId);
 }
 

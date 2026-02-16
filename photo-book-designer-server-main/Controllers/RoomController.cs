@@ -211,5 +211,87 @@ public class RoomController : ControllerBase
             });
         }
     }
+
+    [Authorize]
+    [HttpPost("add-user")]
+    public async Task<ActionResult> AddUser([FromBody] AddUserDTO addUser)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            var userId = _tokenService.GetUserIdFromClaims(User);
+            var room = await _roomService.AddUserIntoRoom(addUser, userId);
+            return Ok(room);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new Responce
+            {
+                Status = "401",
+                Message = "User is not authorized"
+            });
+        }
+        catch (BadHttpRequestException ex)
+        {
+            return BadRequest(new Responce
+            {
+                Status = "405",
+                Message = ex.Message
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new Responce
+            {
+                Status = "500",
+                Message = ex.Message
+            });
+        }
+    }
+
+    [Authorize]
+    [HttpDelete("remove-user")]
+    public async Task<ActionResult> RemoveUser([FromBody] RemoveUserDTO removeUser)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            var userId = _tokenService.GetUserIdFromClaims(User);
+            var room = await _roomService.RemoveUserFromRoom(removeUser, userId);
+            return Ok(room);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new Responce
+            {
+                Status = "401",
+                Message = "User is not authorized"
+            });
+        }
+        catch (BadHttpRequestException ex)
+        {
+            return BadRequest(new Responce
+            {
+                Status = "405",
+                Message = ex.Message
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new Responce
+            {
+                Status = "500",
+                Message = ex.Message
+            });
+        }
+    }
 }
 

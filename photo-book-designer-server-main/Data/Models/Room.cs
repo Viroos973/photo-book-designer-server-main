@@ -9,6 +9,8 @@ namespace photo_book_designer_server_main.Data.Models
         [Required]
         public string Name { get; set; }
         [Required]
+        public string InviteCode { get; set; }
+        [Required]
         public Guid AuthorId { get; set; }
         [Required]
         public int pagesNum { get; set; }

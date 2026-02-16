@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using photo_book_designer_server_main.Data;
@@ -11,9 +12,11 @@ using photo_book_designer_server_main.Data;
 namespace photo_book_designer_server_main.Migrations
 {
     [DbContext(typeof(PhotoBookDBContext))]
-    partial class PhotoBookDBContextModelSnapshot : ModelSnapshot
+    [Migration("20260216181006_Add_Invite_Code")]
+    partial class Add_Invite_Code
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
