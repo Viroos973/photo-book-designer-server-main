@@ -40,6 +40,12 @@ builder.Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IRoomService, RoomService>();
+builder.Services.AddScoped<IRoomPhotoService, RoomPhotoService>();
+
+builder.Services.AddHttpClient<IPhotoStorageClient, PhotoStorageClient>(client =>
+{
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

@@ -11,6 +11,7 @@ namespace photo_book_designer_server_main.Data
         public DbSet<Room> Rooms { get; set; }
         public DbSet<TgBot> TgBots { get; set; }
         public DbSet<UserRoom> UserRoom { get; set; }
+        public DbSet<RoomPhoto> RoomPhotos { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

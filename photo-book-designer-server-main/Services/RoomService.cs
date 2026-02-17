@@ -224,7 +224,7 @@ public class RoomService : IRoomService
             throw new UnauthorizedAccessException("User is not the member of the room.");
         }
 
-        if (room.AuthorId == adminId) 
+        if (room.AuthorId != adminId && removeUser.userId != adminId) 
         {
             throw new BadHttpRequestException("You aren't admin.");
         }

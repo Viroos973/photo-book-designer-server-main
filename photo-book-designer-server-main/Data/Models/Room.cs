@@ -21,5 +21,6 @@ namespace photo_book_designer_server_main.Data.Models
 
         public List<TgBot> TgBots { get; set; }
         public List<UserRoom> UserRooms { get; set; }
+        public List<RoomPhoto> Photos { get; set; }
     }
 }
