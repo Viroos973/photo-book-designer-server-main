@@ -6,6 +6,6 @@ public interface IRoomPhotoService
 {
     Task<RoomPhotoDTO> UploadRoomPhotoAsync(Guid userId, UploadRoomPhotoDTO uploadDto);
     Task DeleteRoomPhotoAsync(Guid userId, string photoId);
-    Task<IEnumerable<RoomPhotoDTO>> GetRoomPhotosAsync(Guid userId, Guid roomId);
+    Task<GetRoomPhotoDTO> GetRoomPhotosAsync(Guid userId, Guid roomId, int? page, int? size);
     Task<RoomPhotoDTO> GetRoomPhotoByIdAsync(Guid userId, string photoId);
 }

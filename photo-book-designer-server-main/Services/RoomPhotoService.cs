@@ -3,6 +3,8 @@ using photo_book_designer_server_main.Data;
 using photo_book_designer_server_main.Data.Models;
 using photo_book_designer_server_main.DTO;
 using photo_book_designer_server_main.Services.Interfaces;
+using System.Linq;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace photo_book_designer_server_main.Services;
 
@@ -94,8 +96,13 @@ public class RoomPhotoService : IRoomPhotoService
         }
     }
 
-    public async Task<IEnumerable<RoomPhotoDTO>> GetRoomPhotosAsync(Guid userId, Guid roomId)
+    public async Task<GetRoomPhotoDTO> GetRoomPhotosAsync(Guid userId, Guid roomId, int? page, int? size)
     {
+        if (size <= 0)
+        {
+            throw new BadHttpRequestException("Size value must be greater than 0");
+        }
+
         var room = await _dbContext.Rooms
             .Include(r => r.UserRooms)
             .FirstOrDefaultAsync(r => r.Id == roomId);
@@ -111,8 +118,20 @@ public class RoomPhotoService : IRoomPhotoService
             throw new UnauthorizedAccessException("User is not the member of the room.");
         }
 
-        var photos = await _dbContext.RoomPhotos
-            .Where(p => p.RoomId == roomId)
+        var photos = _dbContext.RoomPhotos
+            .Where(p => p.RoomId == roomId);
+
+        var totalCount = await photos.CountAsync();
+        var maxPage = (int)Math.Ceiling(totalCount / (double)size);
+
+        if (page < 1 || totalCount <= (page - 1) * size)
+        {
+            throw new BadHttpRequestException($"Page value must be greater than 0 and less than {maxPage + 1}");
+        }
+
+        var items = await photos
+            .Skip((int)((page - 1) * size))
+            .Take((int)size)
             .Select(p => new RoomPhotoDTO
             {
                 ImageId = p.ImageId,
@@ -121,7 +140,19 @@ public class RoomPhotoService : IRoomPhotoService
             })
             .ToListAsync();
 
-        return photos;
+        var pagination = new Pagination
+        {
+            TotalCount = totalCount,
+            Page = (int)page,
+            TotalPages = maxPage,
+            PageSize = (int)size
+        };
+
+        return new GetRoomPhotoDTO
+        {
+            RoomPhotos = items,
+            Pagination = pagination
+        };
     }
 
     public async Task<RoomPhotoDTO> GetRoomPhotoByIdAsync(Guid userId, string photoId)

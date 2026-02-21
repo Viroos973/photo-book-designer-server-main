@@ -102,12 +102,12 @@ public class RoomPhotosController : ControllerBase
     }
 
     [HttpGet("rooms/{roomId}/photos")]
-    public async Task<IActionResult> GetRoomPhotos(Guid roomId)
+    public async Task<IActionResult> GetRoomPhotos(Guid roomId, int? page = 1, int? size = 5)
     {
         try
         {
             var userId = _tokenService.GetUserIdFromClaims(User);
-            var photos = await _roomPhotoService.GetRoomPhotosAsync(userId, roomId);
+            var photos = await _roomPhotoService.GetRoomPhotosAsync(userId, roomId, page, size);
 
             return Ok(photos);
         }
