@@ -40,13 +40,13 @@ namespace photo_book_designer_server_main.Services
 
         public async Task ConnectTgBot(ConnectTgBotDTO connect)
         {
-            var existingBot = await _dbContext.TgBots.FirstOrDefaultAsync(tb => tb.Id == connect.Id);
+            var existingBot = await _dbContext.TgBots.FirstOrDefaultAsync(tb => tb.ChatId == connect.Id);
             if (existingBot != null)
             {
                 throw new BadHttpRequestException("The bot is already connected.");
             }
 
-            var room = await _dbContext.Rooms.FirstOrDefaultAsync(r => r.Id == connect.RoomId);
+            var room = await _dbContext.Rooms.FirstOrDefaultAsync(r => r.InviteCode == connect.InviteCode);
             if (room == null)
             {
                 throw new BadHttpRequestException("Room not found.");
@@ -54,7 +54,8 @@ namespace photo_book_designer_server_main.Services
 
             var tgBot = new TgBot
             {
-                Id = connect.Id,
+                Id = Guid.NewGuid(),
+                ChatId = connect.Id,
                 Name = connect.Name,
                 RoomId = room.Id
             };
@@ -62,9 +63,9 @@ namespace photo_book_designer_server_main.Services
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task DisconnectTgBot(Guid chatId)
+        public async Task DisconnectTgBot(int chatId)
         {
-            var existingBot = await _dbContext.TgBots.FirstOrDefaultAsync(tb => tb.Id == chatId);
+            var existingBot = await _dbContext.TgBots.FirstOrDefaultAsync(tb => tb.ChatId == chatId);
             if (existingBot == null)
             {
                 throw new BadHttpRequestException("Bot not found.");
@@ -72,6 +73,28 @@ namespace photo_book_designer_server_main.Services
 
             _dbContext.TgBots.Remove(existingBot);
             await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<Guid> GetBotRoomId(int chatId)
+        {
+            var existingBot = await _dbContext.TgBots.FirstOrDefaultAsync(tb => tb.ChatId == chatId);
+            if (existingBot == null)
+            {
+                throw new BadHttpRequestException("Bot not found.");
+            }
+
+            return existingBot.RoomId;
+        }
+
+        public async Task<Guid> GetTgBotId(int chatId)
+        {
+            var existingBot = await _dbContext.TgBots.FirstOrDefaultAsync(tb => tb.ChatId == chatId);
+            if (existingBot == null)
+            {
+                throw new BadHttpRequestException("Bot not found.");
+            }
+
+            return existingBot.Id;
         }
     }
 }

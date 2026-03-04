@@ -8,6 +8,8 @@ namespace photo_book_designer_server_main.Data.Models
         [Key]
         public Guid Id { get; set; }
         [Required]
+        public int ChatId { get; set; }
+        [Required]
         public string Name { get; set; }
         public Guid RoomId { get; set; }
         [ForeignKey("RoomId")]

@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -6,6 +6,8 @@ using photo_book_designer_server_main.Data;
 using photo_book_designer_server_main.Options;
 using photo_book_designer_server_main.Services;
 using photo_book_designer_server_main.Services.Interfaces;
+
+DotNetEnv.Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 

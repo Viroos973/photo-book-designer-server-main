@@ -31,7 +31,7 @@ public class RoomPhotosController : ControllerBase
         try
         {
             var userId = _tokenService.GetUserIdFromClaims(User);
-            var result = await _roomPhotoService.UploadRoomPhotoAsync(userId, uploadDto);
+            var result = await _roomPhotoService.UploadRoomPhotoAsync(userId, uploadDto, false);
 
             return Ok(result);
         }
@@ -67,7 +67,7 @@ public class RoomPhotosController : ControllerBase
         try
         {
             var userId = _tokenService.GetUserIdFromClaims(User);
-            await _roomPhotoService.DeleteRoomPhotoAsync(userId, photoId);
+            await _roomPhotoService.DeleteRoomPhotoAsync(userId, photoId, false);
 
             return Ok(new Responce
             {
@@ -107,7 +107,7 @@ public class RoomPhotosController : ControllerBase
         try
         {
             var userId = _tokenService.GetUserIdFromClaims(User);
-            var photos = await _roomPhotoService.GetRoomPhotosAsync(userId, roomId, page, size);
+            var photos = await _roomPhotoService.GetRoomPhotosAsync(userId, roomId, page, size, false);
 
             return Ok(photos);
         }

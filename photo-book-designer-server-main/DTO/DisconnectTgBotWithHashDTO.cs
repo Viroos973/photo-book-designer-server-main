@@ -5,7 +5,7 @@ namespace photo_book_designer_server_main.DTO
     public class DisconnectTgBotWithHashDTO
     {
         [Required]
-        public Guid Id { get; set; }
+        public int ChatId { get; set; }
         [Required]
         public HashTgBotDTO HashTgBot { get; set; }
     }

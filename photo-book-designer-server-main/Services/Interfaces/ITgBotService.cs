@@ -6,6 +6,8 @@ namespace photo_book_designer_server_main.Services.Interfaces
     {
         Task<bool> ValidateTelegramInitData(HashTgBotDTO hashTgBot);
         Task ConnectTgBot(ConnectTgBotDTO connect);
-        Task DisconnectTgBot(Guid chatId);
+        Task DisconnectTgBot(int chatId);
+        Task<Guid> GetBotRoomId(int chatId);
+        Task<Guid> GetTgBotId(int chatId);
     }
 }

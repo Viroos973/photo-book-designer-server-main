@@ -25,9 +25,9 @@ public class PhotoStorageClient : IPhotoStorageClient
         var streamContent = new StreamContent(fileStream);
         streamContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
 
-        content.Add(streamContent, "file");
+        content.Add(streamContent, "file", file.FileName);
 
-        var response = await _httpClient.PostAsync("/api/photos/upload", content);
+        var response = await _httpClient.PostAsync("/api/Photos/upload", content);
 
         if (!response.IsSuccessStatusCode)
         {

@@ -3,8 +3,6 @@ using photo_book_designer_server_main.Data;
 using photo_book_designer_server_main.Data.Models;
 using photo_book_designer_server_main.DTO;
 using photo_book_designer_server_main.Services.Interfaces;
-using System.Linq;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace photo_book_designer_server_main.Services;
 
@@ -19,10 +17,11 @@ public class RoomPhotoService : IRoomPhotoService
         _photoStorageClient = photoStorageClient;
     }
 
-    public async Task<RoomPhotoDTO> UploadRoomPhotoAsync(Guid userId, UploadRoomPhotoDTO uploadDto)
+    public async Task<RoomPhotoDTO> UploadRoomPhotoAsync(Guid userId, UploadRoomPhotoDTO uploadDto, bool isTgBot)
     {
         var room = await _dbContext.Rooms
             .Include(r => r.UserRooms)
+            .Include(r => r.TgBots)
             .FirstOrDefaultAsync(r => r.Id == uploadDto.RoomId);
 
         if (room == null)
@@ -30,7 +29,7 @@ public class RoomPhotoService : IRoomPhotoService
             throw new BadHttpRequestException("Room not found.");
         }
 
-        var isMember = room.UserRooms.Any(ur => ur.UserId == userId);
+        var isMember = isTgBot ? room.TgBots.Any(tb => tb.Id == userId) : room.UserRooms.Any(ur => ur.UserId == userId);
         if (!isMember)
         {
             throw new UnauthorizedAccessException("User is not the member of the room.");
@@ -63,11 +62,11 @@ public class RoomPhotoService : IRoomPhotoService
         }
     }
 
-    public async Task DeleteRoomPhotoAsync(Guid userId, string photoId)
+    public async Task DeleteRoomPhotoAsync(Guid userId, string photoId, bool isTgBot)
     {
         var roomPhoto = await _dbContext.RoomPhotos
-            .Include(p => p.Room)
-            .ThenInclude(r => r.UserRooms)
+            .Include(p => p.Room.UserRooms)
+            .Include(p => p.Room.TgBots)
             .FirstOrDefaultAsync(p => p.ImageId == photoId);
 
         if (roomPhoto == null)
@@ -75,7 +74,7 @@ public class RoomPhotoService : IRoomPhotoService
             throw new BadHttpRequestException("Photo not found.");
         }
 
-        var isMember = roomPhoto.Room.UserRooms.Any(ur => ur.UserId == userId);
+        var isMember = isTgBot ? roomPhoto.Room.TgBots.Any(tb => tb.Id == userId) : roomPhoto.Room.UserRooms.Any(ur => ur.UserId == userId);
         var isAuthor = roomPhoto.Room.AuthorId == userId;
 
         if (!isMember && !isAuthor)
@@ -96,7 +95,7 @@ public class RoomPhotoService : IRoomPhotoService
         }
     }
 
-    public async Task<GetRoomPhotoDTO> GetRoomPhotosAsync(Guid userId, Guid roomId, int? page, int? size)
+    public async Task<GetRoomPhotoDTO> GetRoomPhotosAsync(Guid userId, Guid roomId, int? page, int? size, bool isTgBot)
     {
         if (size <= 0)
         {
@@ -105,6 +104,7 @@ public class RoomPhotoService : IRoomPhotoService
 
         var room = await _dbContext.Rooms
             .Include(r => r.UserRooms)
+            .Include(r => r.TgBots)
             .FirstOrDefaultAsync(r => r.Id == roomId);
 
         if (room == null)
@@ -112,7 +112,7 @@ public class RoomPhotoService : IRoomPhotoService
             throw new BadHttpRequestException("Room not found.");
         }
 
-        var isMember = room.UserRooms.Any(ur => ur.UserId == userId);
+        var isMember = isTgBot ? room.TgBots.Any(tb => tb.Id == userId) : room.UserRooms.Any(ur => ur.UserId == userId);
         if (!isMember)
         {
             throw new UnauthorizedAccessException("User is not the member of the room.");
@@ -124,7 +124,7 @@ public class RoomPhotoService : IRoomPhotoService
         var totalCount = await photos.CountAsync();
         var maxPage = (int)Math.Ceiling(totalCount / (double)size);
 
-        if (page < 1 || totalCount <= (page - 1) * size)
+        if (page < 1 || (totalCount <= (page - 1) * size) && totalCount != 0)
         {
             throw new BadHttpRequestException($"Page value must be greater than 0 and less than {maxPage + 1}");
         }
