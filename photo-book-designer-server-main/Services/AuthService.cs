@@ -26,48 +26,64 @@ public class AuthService : IAuthService
 
     public async Task<TokenDTO> LoginAsync(LoginDTO login)
     {
-        var passwordHash = await PasswordHashing(login.Password);
-
-        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == login.Email && u.Password == passwordHash);
-        if (user == null)
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == login.Email);
+        if (user == null || !VerifyPassword(login.Password, user.Password))
         {
             throw new BadHttpRequestException("Invalid credentials.");
         }
 
-        var token = GenerateJwtToken(user);
-
-        return new TokenDTO
-        {
-            Token = token
-        };
+        return await GenerateTokensAsync(user);
     }
 
-    public async Task<TokenDTO> RegisterAsync(RegisterDTO register) 
+    public async Task<TokenDTO> RegisterAsync(RegisterDTO register)
     {
         var existing = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == register.Email);
         if (existing != null)
         {
-            throw new BadHttpRequestException(message: $"Email {register.Email} is already taken");
+            throw new BadHttpRequestException($"Email {register.Email} is already taken");
         }
-
-        var passwordHash = await PasswordHashing(register.Password);
 
         var user = new User
         {
             Id = Guid.NewGuid(),
             Email = register.Email,
             Name = register.Name,
-            Password = passwordHash
+            Password = HashPassword(register.Password)
         };
 
         await _dbContext.Users.AddAsync(user);
         await _dbContext.SaveChangesAsync();
 
-        return await LoginAsync(new LoginDTO
+        return await GenerateTokensAsync(user);
+    }
+
+    public async Task<TokenDTO> RefreshTokenAsync(string refreshToken)
+    {
+        var token = await _dbContext.RefreshTokens
+            .Include(rt => rt.User)
+            .FirstOrDefaultAsync(rt => rt.Token == refreshToken);
+
+        if (token == null || token.ExpiresAt < DateTime.UtcNow || token.RevokedAt != null)
         {
-            Email = register.Email,
-            Password = register.Password
-        });
+            throw new BadHttpRequestException("Invalid or expired refresh token");
+        }
+
+        token.RevokedAt = DateTime.UtcNow;
+        await _dbContext.SaveChangesAsync();
+
+        return await GenerateTokensAsync(token.User);
+    }
+
+    public async Task LogoutAsync(Guid userId, string refreshToken)
+    {
+        var token = await _dbContext.RefreshTokens
+            .FirstOrDefaultAsync(rt => rt.Token == refreshToken && rt.UserId == userId);
+
+        if (token != null)
+        {
+            token.RevokedAt = DateTime.UtcNow;
+            await _dbContext.SaveChangesAsync();
+        }
     }
 
     public async Task<UserProfileDTO> GetProfileAsync(Guid userId)
@@ -97,8 +113,7 @@ public class AuthService : IAuthService
         user.Name = updateProfile.Name;
         if (!string.IsNullOrWhiteSpace(updateProfile.Password))
         {
-            var passwordHash = await PasswordHashing(updateProfile.Password);
-            user.Password = passwordHash;
+            user.Password = HashPassword(updateProfile.Password);
         }
 
         await _dbContext.SaveChangesAsync();
@@ -111,11 +126,17 @@ public class AuthService : IAuthService
         };
     }
 
-    private async Task<string> PasswordHashing(string password)
+    private async Task<TokenDTO> GenerateTokensAsync(User user)
     {
-        var md5 = MD5.Create();
-        var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(password));
-        return Convert.ToBase64String(hash);
+        var accessToken = GenerateJwtToken(user);
+        var refreshToken = await GenerateRefreshTokenAsync(user.Id);
+
+        return new TokenDTO
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken.Token,
+            ExpiresIn = _jwtOptions.ExpiresMinutes * 60
+        };
     }
 
     private string GenerateJwtToken(User user)
@@ -140,5 +161,31 @@ public class AuthService : IAuthService
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
-}
 
+    private async Task<RefreshToken> GenerateRefreshTokenAsync(Guid userId)
+    {
+        var refreshToken = new RefreshToken
+        {
+            Id = Guid.NewGuid(),
+            Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
+            UserId = userId,
+            ExpiresAt = DateTime.UtcNow.AddDays(7),
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _dbContext.RefreshTokens.AddAsync(refreshToken);
+        await _dbContext.SaveChangesAsync();
+
+        return refreshToken;
+    }
+
+    private string HashPassword(string password)
+    {
+        return BCrypt.Net.BCrypt.HashPassword(password);
+    }
+
+    private bool VerifyPassword(string password, string hash)
+    {
+        return BCrypt.Net.BCrypt.Verify(password, hash);
+    }
+}

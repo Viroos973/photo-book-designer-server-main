@@ -61,6 +61,48 @@ public class RoomPhotosController : ControllerBase
         }
     }
 
+    [HttpPost("upload-background")]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> UploadBackground([FromForm] UploadRoomPhotoDTO uploadDto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            var userId = _tokenService.GetUserIdFromClaims(User);
+            var result = await _roomPhotoService.UploadBackgroundAsync(userId, uploadDto);
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new Responce
+            {
+                Status = "401",
+                Message = "User is not authorized"
+            });
+        }
+        catch (BadHttpRequestException ex)
+        {
+            return BadRequest(new Responce
+            {
+                Status = "405",
+                Message = ex.Message
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new Responce
+            {
+                Status = "500",
+                Message = ex.Message
+            });
+        }
+    }
+
     [HttpDelete("photos/{photoId}")]
     public async Task<IActionResult> DeleteRoomPhoto(string photoId)
     {

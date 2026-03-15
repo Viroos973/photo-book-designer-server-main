@@ -9,7 +9,8 @@ public interface IRoomService
     Task<RoomDTO> UpdateRoomNameAsync(Guid userId, Guid roomId, UpdateRoomNameDTO updateRoomName);
     Task<IEnumerable<RoomDTO>> GetRoomsAsync(Guid userId);
     Task<CertainRoomDTO> GetRoomByIdAsync(Guid userId, Guid roomId);
-    Task<CertainRoomDTO> AddUserIntoRoom(AddUserDTO addUser, Guid userId);
-    Task<CertainRoomDTO> RemoveUserFromRoom(RemoveUserDTO removeUser, Guid adminId);
+    Task<List<UserProfileDTO>> AddUserIntoRoom(AddUserDTO addUser, Guid userId);
+    Task<List<UserProfileDTO>> RemoveUserFromRoom(RemoveUserDTO removeUser, Guid adminId);
+    Task<PageDTO> CreateOrUpdatePage(Guid userId, CreatePageDTO page);
 }
 

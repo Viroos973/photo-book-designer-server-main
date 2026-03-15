@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using photo_book_designer_server_main.Data;
@@ -11,9 +12,11 @@ using photo_book_designer_server_main.Data;
 namespace photo_book_designer_server_main.Migrations
 {
     [DbContext(typeof(PhotoBookDBContext))]
-    partial class PhotoBookDBContextModelSnapshot : ModelSnapshot
+    [Migration("20260313143730_AddRefreshToken")]
+    partial class AddRefreshToken
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -91,10 +94,7 @@ namespace photo_book_designer_server_main.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("Role")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid?>("RoomId")
+                    b.Property<Guid>("RoomId")
                         .HasColumnType("uuid");
 
                     b.HasKey("ImageId");
@@ -180,7 +180,9 @@ namespace photo_book_designer_server_main.Migrations
                 {
                     b.HasOne("photo_book_designer_server_main.Data.Models.Room", "Room")
                         .WithMany("Photos")
-                        .HasForeignKey("RoomId");
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Room");
                 });

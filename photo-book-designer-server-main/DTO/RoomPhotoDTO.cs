@@ -4,6 +4,6 @@
     {
         public string ImageId { get; set; }
         public string ImageUrl { get; set; }
-        public Guid RoomId { get; set; }
+        public Guid? RoomId { get; set; }
     }
 }

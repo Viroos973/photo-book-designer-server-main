@@ -14,5 +14,6 @@ namespace photo_book_designer_server_main.Data.Models
         public string Password { get; set; }
 
         public List<UserRoom> UserRooms { get; set; }
+        public List<RefreshToken> RefreshTokens { get; set; }
     }
 }

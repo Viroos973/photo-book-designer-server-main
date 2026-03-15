@@ -81,6 +81,63 @@ public class AuthController : ControllerBase
     }
 
     [Authorize]
+    [HttpPost("refresh")]
+    public async Task<ActionResult> RefreshToken(RefreshTokenDTO refresh)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            var refreshToken = _authService.RefreshTokenAsync(refresh.RefreshToken);
+            return Ok(refreshToken);
+        }
+        catch (BadHttpRequestException ex)
+        {
+            return BadRequest(new Responce
+            {
+                Status = "405",
+                Message = ex.Message
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new Responce
+            {
+                Status = "500",
+                Message = ex.Message
+            });
+        }
+    }
+
+    [Authorize]
+    [HttpPost("logout")]
+    public async Task<ActionResult> Logout(RefreshTokenDTO refresh)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            var userId = _tokenService.GetUserIdFromClaims(User);
+            await _authService.LogoutAsync(userId, refresh.RefreshToken);
+            return Ok("Success logout");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new Responce
+            {
+                Status = "500",
+                Message = ex.Message
+            });
+        }
+    }
+
+    [Authorize]
     [HttpGet("profile")]
     public async Task<ActionResult> GetProfile()
     {

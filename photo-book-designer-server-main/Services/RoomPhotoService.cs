@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using photo_book_designer_server_main.Data;
+using photo_book_designer_server_main.Data.Enums;
 using photo_book_designer_server_main.Data.Models;
 using photo_book_designer_server_main.DTO;
 using photo_book_designer_server_main.Services.Interfaces;
@@ -43,7 +44,54 @@ public class RoomPhotoService : IRoomPhotoService
             {
                 ImageId = photoStorageResult.ImageId,
                 ImageUrl = photoStorageResult.ImageUrl,
-                RoomId = uploadDto.RoomId
+                RoomId = uploadDto.RoomId,
+                Role = PhotoRole.UserPhoto
+            };
+
+            await _dbContext.RoomPhotos.AddAsync(roomPhoto);
+            await _dbContext.SaveChangesAsync();
+
+            return new RoomPhotoDTO
+            {
+                ImageId = roomPhoto.ImageId,
+                ImageUrl = roomPhoto.ImageUrl,
+                RoomId = roomPhoto.RoomId
+            };
+        }
+        catch
+        {
+            throw new BadHttpRequestException("Error when uploading a photo.");
+        }
+    }
+
+    public async Task<RoomPhotoDTO> UploadBackgroundAsync(Guid userId, UploadRoomPhotoDTO uploadDto)
+    {
+        var room = await _dbContext.Rooms
+            .Include(r => r.UserRooms)
+            .Include(r => r.TgBots)
+            .FirstOrDefaultAsync(r => r.Id == uploadDto.RoomId);
+
+        if (room == null)
+        {
+            throw new BadHttpRequestException("Room not found.");
+        }
+
+        var isMember = room.UserRooms.Any(ur => ur.UserId == userId);
+        if (!isMember)
+        {
+            throw new UnauthorizedAccessException("User is not the member of the room.");
+        }
+
+        try
+        {
+            var photoStorageResult = await _photoStorageClient.UploadPhotoAsync(uploadDto.File);
+
+            var roomPhoto = new RoomPhoto
+            {
+                ImageId = photoStorageResult.ImageId,
+                ImageUrl = photoStorageResult.ImageUrl,
+                RoomId = uploadDto.RoomId,
+                Role = PhotoRole.UserBackground
             };
 
             await _dbContext.RoomPhotos.AddAsync(roomPhoto);

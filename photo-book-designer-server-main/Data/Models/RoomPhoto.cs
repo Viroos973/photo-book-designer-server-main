@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using photo_book_designer_server_main.Data.Enums;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace photo_book_designer_server_main.Data.Models
@@ -10,7 +11,9 @@ namespace photo_book_designer_server_main.Data.Models
         public string ImageId { get; set; }
         [Required]
         public string ImageUrl { get; set; }
-        public Guid RoomId { get; set; }
+        [Required]
+        public PhotoRole Role { get; set; }
+        public Guid? RoomId { get; set; }
         [ForeignKey("RoomId")]
         public Room Room { get; set; }
     }

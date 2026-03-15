@@ -293,5 +293,46 @@ public class RoomController : ControllerBase
             });
         }
     }
+
+    [Authorize]
+    [HttpPost("create-update-page")]
+    public async Task<ActionResult> CreateOrUpdatePage([FromBody] CreatePageDTO page)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            var userId = _tokenService.GetUserIdFromClaims(User);
+            var newPage = await _roomService.CreateOrUpdatePage(userId, page);
+            return Ok(newPage);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new Responce
+            {
+                Status = "401",
+                Message = "User is not authorized"
+            });
+        }
+        catch (BadHttpRequestException ex)
+        {
+            return BadRequest(new Responce
+            {
+                Status = "405",
+                Message = ex.Message
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new Responce
+            {
+                Status = "500",
+                Message = ex.Message
+            });
+        }
+    }
 }
 
