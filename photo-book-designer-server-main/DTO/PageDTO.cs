@@ -6,6 +6,6 @@ namespace photo_book_designer_server_main.DTO
     {
         public Guid RoomId { get; set; }
         public int PageNumber { get; set; }
-        public List<BsonDocument> Shapes { get; set; }
+        public List<object> Shapes { get; set; }
     }
 }

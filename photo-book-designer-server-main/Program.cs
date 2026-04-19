@@ -57,6 +57,7 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IRoomService, RoomService>();
 builder.Services.AddScoped<IRoomPhotoService, RoomPhotoService>();
 builder.Services.AddScoped<ITgBotService, TgBotService>();
+builder.Services.AddScoped<IPageService, PageService>();
 
 builder.Services.AddHostedService<TokenCleanupService>();
 
@@ -69,6 +70,16 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -76,6 +87,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("AllowAll");
 
 app.UseHttpsRedirection();
 

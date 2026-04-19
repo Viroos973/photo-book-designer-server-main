@@ -8,6 +8,7 @@ namespace photo_book_designer_server_main.MongoData
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
+        [BsonGuidRepresentation(GuidRepresentation.Standard)]
         public Guid RoomId { get; set; }
         public int PageNumber { get; set; }
         public string HtmlContent { get; set; }

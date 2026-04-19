@@ -80,7 +80,6 @@ public class AuthController : ControllerBase
         }
     }
 
-    [Authorize]
     [HttpPost("refresh")]
     public async Task<ActionResult> RefreshToken(RefreshTokenDTO refresh)
     {

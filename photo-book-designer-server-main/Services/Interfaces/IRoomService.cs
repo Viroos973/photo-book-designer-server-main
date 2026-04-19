@@ -11,6 +11,5 @@ public interface IRoomService
     Task<CertainRoomDTO> GetRoomByIdAsync(Guid userId, Guid roomId);
     Task<List<UserProfileDTO>> AddUserIntoRoom(AddUserDTO addUser, Guid userId);
     Task<List<UserProfileDTO>> RemoveUserFromRoom(RemoveUserDTO removeUser, Guid adminId);
-    Task<PageDTO> CreateOrUpdatePage(Guid userId, CreatePageDTO page);
 }
 

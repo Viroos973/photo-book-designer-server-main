@@ -10,6 +10,5 @@
         public int WidthTemplate { get; set; }
         public int HeightTemplate { get; set; }
         public List<UserProfileDTO> Users { get; set; }
-        public List<PageDTO> Pages { get; set; }
     }
 }
